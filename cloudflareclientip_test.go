@@ -9,11 +9,14 @@ import (
 
 type seen struct{ xff, xri, cf string }
 
+// The backend echoes what it received into the response headers. (A closure assigning to a
+// captured variable doesn't propagate under Yaegi, the interpreter Traefik runs plugins in.)
 func run(t *testing.T, cfg *Config, remote string, headers map[string]string) seen {
 	t.Helper()
-	var got seen
-	next := http.HandlerFunc(func(_ http.ResponseWriter, r *http.Request) {
-		got = seen{r.Header.Get("X-Forwarded-For"), r.Header.Get("X-Real-Ip"), r.Header.Get("CF-Connecting-IP")}
+	next := http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
+		rw.Header().Set("Got-Xff", r.Header.Get("X-Forwarded-For"))
+		rw.Header().Set("Got-Xri", r.Header.Get("X-Real-Ip"))
+		rw.Header().Set("Got-Cf", r.Header.Get("CF-Connecting-IP"))
 	})
 	h, err := New(context.Background(), next, cfg, "test")
 	if err != nil {
@@ -24,8 +27,9 @@ func run(t *testing.T, cfg *Config, remote string, headers map[string]string) se
 	for k, v := range headers {
 		req.Header.Set(k, v)
 	}
-	h.ServeHTTP(httptest.NewRecorder(), req)
-	return got
+	rec := httptest.NewRecorder()
+	h.ServeHTTP(rec, req)
+	return seen{rec.Header().Get("Got-Xff"), rec.Header().Get("Got-Xri"), rec.Header().Get("Got-Cf")}
 }
 
 func TestFromCloudflareUsesHeader(t *testing.T) {
