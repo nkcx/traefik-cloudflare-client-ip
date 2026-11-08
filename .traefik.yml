@@ -1,0 +1,8 @@
+displayName: Cloudflare Client IP
+type: middleware
+import: github.com/nkcx/traefik-cloudflare-client-ip
+summary: >-
+  Trust CF-Connecting-IP only from Cloudflare's own addresses: sets X-Forwarded-For and
+  X-Real-Ip to the visitor's real IP, and strips a forged CF-Connecting-IP from anyone else.
+testData:
+  header: CF-Connecting-IP
