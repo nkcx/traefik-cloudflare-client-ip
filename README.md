@@ -33,7 +33,7 @@ Static configuration (CLI flags shown):
 
 ```
 --experimental.plugins.cfclientip.moduleName=github.com/nkcx/traefik-cloudflare-client-ip
---experimental.plugins.cfclientip.version=v0.1.0
+--experimental.plugins.cfclientip.version=v0.1.1
 --entrypoints.websecure.http.middlewares=cf-client-ip@docker
 ```
 
